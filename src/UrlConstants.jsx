@@ -22,4 +22,6 @@ export const API_MOVE_FILES = API_FILES + '/move';
 
 export const API_USER_INFO = API_BASE_URL + API_CONTEXT + '/user/me';
 
+export const API_ADMIN_AUDIT = API_BASE_URL + API_CONTEXT + '/admin/audit';
+
 export const GITHUB_INFO = window.APP_CONFIG.githubLink

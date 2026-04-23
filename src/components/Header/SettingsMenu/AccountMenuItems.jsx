@@ -1,5 +1,5 @@
 import {Divider, ListItemIcon, MenuItem} from "@mui/material";
-import {GitHub, Logout} from "@mui/icons-material";
+import {GitHub, Logout, History} from "@mui/icons-material";
 import {sendLogout} from "../../../services/fetch/auth/user/SendLogout.js";
 import {useAuthContext} from "../../../context/Auth/AuthContext.jsx";
 import {useNavigate} from "react-router-dom";
@@ -8,7 +8,7 @@ import {GITHUB_INFO} from "../../../UrlConstants.jsx";
 
 
 export const accountMenuItems = (openProfileModal, openSecurityModal) => {
-    const {logout} = useAuthContext();
+    const {logout, auth} = useAuthContext();
     const navigate = useNavigate();
     const {showInfo, showError} = useNotification();
 
@@ -27,6 +27,11 @@ export const accountMenuItems = (openProfileModal, openSecurityModal) => {
         }
     }
 
+    const handleAuditClick = () => {
+        navigate("/audit");
+    }
+
+    const isAdmin = auth?.user?.role === 'ADMIN';
 
     return (
         <>
@@ -43,6 +48,16 @@ export const accountMenuItems = (openProfileModal, openSecurityModal) => {
                 </ListItemIcon>
                 Исходный код проекта
             </MenuItem>
+            {isAdmin && (
+                <>
+                    <MenuItem onClick={handleAuditClick}>
+                        <ListItemIcon>
+                            <History fontSize="small"/>
+                        </ListItemIcon>
+                        Журнал аудита
+                    </MenuItem>
+                </>
+            )}
             <Divider/>
             <MenuItem onClick={handleLogout}>
                 <ListItemIcon>

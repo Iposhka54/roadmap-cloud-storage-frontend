@@ -10,6 +10,7 @@ import UnavailableAfterLoginRoute from "./context/Auth/UnavailableAfterLoginRout
 import AvailableAfterLoginRoute from "./context/Auth/AvailableAfterLoginRoute.jsx";
 import Files from "./pages/Files.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
+import Audit from "./pages/Audit.jsx";
 
 function App() {
 
@@ -44,6 +45,13 @@ function App() {
                                element={
                                    <AvailableAfterLoginRoute>
                                        <Files/>
+                                   </AvailableAfterLoginRoute>
+                               }/>
+
+                        <Route path="audit"
+                               element={
+                                   <AvailableAfterLoginRoute>
+                                       <Audit/>
                                    </AvailableAfterLoginRoute>
                                }/>
 
