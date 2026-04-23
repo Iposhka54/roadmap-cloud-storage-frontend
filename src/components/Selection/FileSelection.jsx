@@ -85,6 +85,18 @@ export const FileSelection = ({
 
     }, [selectedIds])
 
+    useEffect(() => {
+        if (!selectoRef.current) {
+            return;
+        }
+
+        const selectedTargets = selectedIds
+            .map(id => document.querySelector(`[data-id="${id}"]`))
+            .filter(el => el !== null);
+
+        selectoRef.current.setSelectedTargets(selectedTargets);
+    }, [selectedIds, selectoRef]);
+
     const [iconCoord, setIconCoord] = useState({x: 0, y: 0});
     const iconRef = useRef(null);
     const [showIcon, setShowIcon] = useState(false);
