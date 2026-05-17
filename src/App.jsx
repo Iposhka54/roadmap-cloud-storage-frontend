@@ -10,6 +10,9 @@ import UnavailableAfterLoginRoute from "./context/Auth/UnavailableAfterLoginRout
 import AvailableAfterLoginRoute from "./context/Auth/AvailableAfterLoginRoute.jsx";
 import Files from "./pages/Files.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
+import Audit from "./pages/Audit.jsx";
+import Trash from "./pages/Trash.jsx";
+import Tariffs from "./pages/Tariffs.jsx";
 
 function App() {
 
@@ -44,6 +47,27 @@ function App() {
                                element={
                                    <AvailableAfterLoginRoute>
                                        <Files/>
+                                   </AvailableAfterLoginRoute>
+                               }/>
+
+                        <Route path="trash"
+                               element={
+                                   <AvailableAfterLoginRoute>
+                                       <Trash/>
+                                   </AvailableAfterLoginRoute>
+                               }/>
+
+                        <Route path="tariffs"
+                               element={
+                                   <AvailableAfterLoginRoute>
+                                       <Tariffs/>
+                                   </AvailableAfterLoginRoute>
+                               }/>
+
+                        <Route path="audit"
+                               element={
+                                   <AvailableAfterLoginRoute>
+                                       <Audit/>
                                    </AvailableAfterLoginRoute>
                                }/>
 

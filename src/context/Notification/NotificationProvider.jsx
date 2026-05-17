@@ -103,6 +103,7 @@ export const NotificationProvider = ({children}) => {
                         border: '2px solid',
                         borderColor: colors[notification.severity],
                         color: 'text.secondary',
+                        whiteSpace: 'pre-line',
                     }}
                 >
                     <AlertTitle>{notification.severity.toUpperCase()}</AlertTitle>

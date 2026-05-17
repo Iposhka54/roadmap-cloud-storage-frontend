@@ -73,7 +73,7 @@ export const FileBrowserHeader = () => {
     return (
         <Container disableGutters
                    sx={{
-                       mt: 8,
+                       mt: 22,
                        width: '100%',
                        position: 'fixed',
                        transform: 'translateX(-50%)',

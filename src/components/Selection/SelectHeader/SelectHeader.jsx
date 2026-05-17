@@ -1,9 +1,10 @@
 import {Box, Container, Divider, List, ListItemIcon, ListItemText, MenuItem, Popper, Toolbar} from "@mui/material";
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 import Typography from "@mui/material/Typography";
 import CheckBoxOutlinedIcon from '@mui/icons-material/CheckBoxOutlined';
 import {useStorageSelection} from "../../../context/Storage/StorageSelectionProvider.jsx";
@@ -14,10 +15,13 @@ import RenameModal from "../../../modals/FileChange/RenameModal.jsx";
 import {ContentCut, ContentPaste} from "@mui/icons-material";
 import {isMobile} from "react-device-detect";
 import {useStorageNavigation} from "../../../context/Storage/StorageNavigationProvider.jsx";
+import {useLocation} from "react-router-dom";
 
 
 export const SelectHeader = () => {
     const {deleteObject, downloadObjects, pasteObjects} = useStorageOperations();
+    const location = useLocation();
+    const isFilesRoute = location.pathname.startsWith('/files');
 
     const allowContext = window.APP_CONFIG.isFileContextMenuAllowed;
 
@@ -31,19 +35,39 @@ export const SelectHeader = () => {
         selectedIds,
         setSelectedIds,
         startCutting,
-        isCutMode
+        isCutMode,
+        isDeleteMode,
+        startDeleteMode,
+        endDeleteMode
     } = useStorageSelection();
 
-    const {isSearchMode, setSearchedContent, loadFolder} = useStorageNavigation();
+    const {isSearchMode} = useStorageNavigation();
 
     const clearSelectionMode = () => {
+        endDeleteMode();
         setSelectionMode(false);
         setSelectedIds([]);
     }
 
     function handleDelete() {
+        if (!isDeleteMode) {
+            startDeleteMode();
+            return;
+        }
+
         deleteObject(selectedIds);
         clearSelectionMode();
+    }
+
+    function handleSelectAllForDelete() {
+        const allVisibleIds = Array.from(document.querySelectorAll('.elements .selectable[data-id]'))
+            .map(element => element.dataset.id)
+            .filter(Boolean);
+
+        const areAllVisibleSelected = allVisibleIds.length > 0
+            && allVisibleIds.every(id => selectedIds.includes(id));
+
+        setSelectedIds(areAllVisibleSelected ? [] : allVisibleIds);
     }
 
     async function handleDownload() {
@@ -65,9 +89,11 @@ export const SelectHeader = () => {
 
 
     const [anchorEl2, setAnchorEl2] = useState(null);
+    const headerRef = useRef(null);
 
     const handleDeleteContext = () => {
         deleteObject(selectedIds);
+        endDeleteMode();
         setSelectionMode(false);
         setSelectedIds([]);
         setAnchorEl2(null);
@@ -94,6 +120,10 @@ export const SelectHeader = () => {
     }, []);
 
     const handleClose = useCallback((event) => {
+        if (headerRef.current?.contains(event.target)) {
+            return;
+        }
+
         const elementsUnderCursor = document.elementsFromPoint(event.clientX, event.clientY);
         const contextPopper = elementsUnderCursor.find(elem => elem.classList.contains('MuiPopper-root'));
         if (contextPopper) return;
@@ -144,6 +174,10 @@ export const SelectHeader = () => {
     }, [selectedIds, isCutMode, createAnchorElement]);
 
     useEffect(() => {
+        if (!isFilesRoute) {
+            return;
+        }
+
         if (!isMob && allowContext) {
             //todo test experemental mousedown
             document.addEventListener('contextmenu', handleContextMenu, true);
@@ -154,11 +188,16 @@ export const SelectHeader = () => {
                 document.removeEventListener('mousedown', handleClose, true);
             };
         }
-    }, [handleContextMenu, handleClose]);
+    }, [handleContextMenu, handleClose, isFilesRoute]);
+
+    if (!isFilesRoute) {
+        return null;
+    }
 
 
     return (
         <Container
+            ref={headerRef}
             sx={{
                 zIndex: 2000,
                 position: 'absolute',
@@ -228,10 +267,24 @@ export const SelectHeader = () => {
                 </Typography>
 
                 <Box sx={{display: 'flex', ml: 'auto'}}>
+                    {!isSearchMode && isDeleteMode && (
+                        <IconButton
+                            onClick={handleSelectAllForDelete}
+                            sx={{
+                                width: '35px',
+                                height: '35px',
+                                color: 'white',
+                                userSelect: 'none'
+                            }}
+                        >
+                            <DoneAllIcon sx={{fontSize: '20px'}}/>
+                        </IconButton>
+                    )}
+
                     <IconButton
                         onClick={handleDownload}
                         sx={{
-                            display: selectedIds.length === 1 ? 'flex' : 'none',
+                            display: selectedIds.length === 1 && !isDeleteMode ? 'flex' : 'none',
 
                             width: '35px',
                             height: '35px',
@@ -246,7 +299,7 @@ export const SelectHeader = () => {
                     <IconButton
                         onClick={handleRenameClick}
                         sx={{
-                            display: selectedIds.length === 1 ? 'flex' : 'none',
+                            display: selectedIds.length === 1 && !isDeleteMode ? 'flex' : 'none',
 
                             width: '35px',
                             height: '35px',
@@ -262,7 +315,10 @@ export const SelectHeader = () => {
                         <IconButton
                             onClick={handleDelete}
                             sx={{
-
+                                backgroundColor: isDeleteMode ? 'error.main' : 'transparent',
+                                '&:hover': {
+                                    backgroundColor: isDeleteMode ? 'error.dark' : 'rgba(255,255,255,0.08)',
+                                },
                                 width: '35px',
                                 height: '35px',
                                 color: 'white',
@@ -278,6 +334,7 @@ export const SelectHeader = () => {
                         <IconButton
                             onClick={startCutting}
                             sx={{
+                                display: !isDeleteMode ? 'flex' : 'none',
 
                                 width: '35px',
                                 height: '35px',
@@ -381,7 +438,7 @@ export const SelectHeader = () => {
                             <ListItemIcon>
                                 <DeleteIcon fontSize="small"/>
                             </ListItemIcon>
-                            <ListItemText>Удалить</ListItemText>
+                            <ListItemText>В корзину</ListItemText>
                             <Typography variant="body2" sx={{color: 'text.secondary'}}>
                                 Del
                             </Typography>

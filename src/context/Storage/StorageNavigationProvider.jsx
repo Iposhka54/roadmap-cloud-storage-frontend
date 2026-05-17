@@ -15,7 +15,7 @@ export const useStorageNavigation = () => useContext(CloudStorageContext);
 
 
 export const StorageNavigationProvider = ({children}) => {
-    const {setSelectedIds} = useStorageSelection();
+    const {setSelectedIds, endDeleteMode} = useStorageSelection();
 
     const [folderContentLoading, setFolderContentLoading] = useState(false);
     const [folderPath, setFolderPath] = React.useState([""]);
@@ -64,6 +64,7 @@ export const StorageNavigationProvider = ({children}) => {
 
     const updateCurrentFolderContent = async (path = [""]) => {
         setSelectedIds([]);
+        endDeleteMode();
         const fullPath = path.join("");
         try {
             let content = await sendGetFolderContent(fullPath);
@@ -86,6 +87,7 @@ export const StorageNavigationProvider = ({children}) => {
 
     const loadFolder = async (url = "") => {
         setSelectedIds([]);
+        endDeleteMode();
         setFolderContentLoading(true);
         try {
             let content = await sendGetFolderContent(url); //todo add check for 404

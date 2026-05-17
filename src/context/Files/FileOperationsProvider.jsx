@@ -1,5 +1,4 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
-import {sendDeleteObject} from "../../services/fetch/auth/storage/SendDeleteObject.js";
 import {useStorageNavigation} from "../Storage/StorageNavigationProvider.jsx";
 import {sendMoveObject} from "../../services/fetch/auth/storage/SendMoveObject.js";
 import {extractSimpleName} from "../../services/util/Utils.js";
@@ -11,6 +10,8 @@ import RenameModal from "../../modals/FileChange/RenameModal.jsx";
 import {sendUpload} from "../../services/fetch/auth/storage/SendUploadFIle.js";
 import {useNotification} from "../Notification/NotificationProvider.jsx";
 import StorageExceedException from "../../exception/StorageExceedException.jsx";
+import {sendMoveToTrash} from "../../services/fetch/auth/storage/SendMoveToTrash.js";
+import {useStorageMeta} from "../Storage/StorageMetaProvider.jsx";
 
 const FileOperationsContext = createContext();
 
@@ -21,6 +22,7 @@ export const FileOperationsProvider = ({children}) => {
 
     const {loadFolder, currentPath, getObjectByPath, folderContent, currentPathRef} = useStorageNavigation();
     const { isCutMode, bufferIds, endCopying, endCutting, selectedIds} = useStorageSelection();
+    const {refreshStorageInfo} = useStorageMeta();
 
     const [tasks, setTasks] = useState([]);
     const [newTasksAdded, setNewTasksAdded] = useState(false);
@@ -31,7 +33,16 @@ export const FileOperationsProvider = ({children}) => {
 
     const [taskRunning, setTaskRunning] = useState(false);
 
-    const {showError} = useNotification();
+    const {showError, showWarn} = useNotification();
+
+    const buildRejectedFilesMessage = (rejectedFiles = []) => {
+        if (rejectedFiles.length === 0) {
+            return "Некоторые файлы не удалось загрузить";
+        }
+
+        const bulletList = rejectedFiles.map((file) => `• ${file}`).join('\n');
+        return `Не удалось загрузить файлы:\n${bulletList}`;
+    };
 
     const nameAlreadyExists = (path) => {
         let fltrd = folderContent.filter(obj => obj.name === extractSimpleName(path));
@@ -151,21 +162,30 @@ export const FileOperationsProvider = ({children}) => {
         setTaskRunning(true);
 
         try {
-            await Promise.all(uniqueTasks.map(async ({task, files}) => {
+            const results = await Promise.all(uniqueTasks.map(async ({task, files}) => {
                 updateTask(task, "progress", "Загружаем...")
-                await sendUpload(files, updateDownloadTask, updateTask, task, currPath);
+                return await sendUpload(files, updateDownloadTask, updateTask, task, currPath);
 
 
             }));
+
+            const rejectedFiles = results
+                .map(result => result?.quotaError?.rejectedFiles ?? [])
+                .flat();
+
+            if (rejectedFiles.length > 0) {
+                showWarn(buildRejectedFilesMessage(rejectedFiles), 10000);
+            }
         } catch (e) {
             switch (true) {
                 case e instanceof StorageExceedException:
-                    showError(e.message);
+                    showError(buildRejectedFilesMessage(e.rejectedFiles?.length ? e.rejectedFiles : [e.message]), 10000);
             }
-            clearTasks();
+            console.log(e);
         }
         setTimeout(() => {
             loadFolder(currPath);
+            refreshStorageInfo({silent: true});
         }, 300);
 
         setTaskRunning(false);
@@ -175,7 +195,7 @@ export const FileOperationsProvider = ({children}) => {
 
 
     const deleteObject = (objects) => {
-        let deleteTasks = objects.map(path => createTask(path, null, "delete", "В очереди на удаление"));
+        let deleteTasks = objects.map(path => createTask(path, null, "trash", "В очереди на перемещение в корзину"));
         let uniqueTasks = deleteTasks.filter((task) => !identicalTasks(task));
 
         setTasks([...tasks, ...uniqueTasks]);
@@ -312,8 +332,8 @@ export const FileOperationsProvider = ({children}) => {
 
         try {
             for (const task of pendingTasks) {
-                if (task.operation.type === "delete") {
-                    await executeDeleteTask(task);
+                if (task.operation.type === "trash") {
+                    await executeTrashTask(task);
                 }
                 if (task.operation.type === "move") {
                     await executeMoveTask(task);
@@ -325,8 +345,9 @@ export const FileOperationsProvider = ({children}) => {
                 case e instanceof StorageExceedException:
                     showError(e.message);
             }
-            clearTasks();
+            console.log(e);
         }
+        refreshStorageInfo({silent: true});
         setTaskRunning(false);
     }
 
@@ -349,11 +370,11 @@ export const FileOperationsProvider = ({children}) => {
 
     }
 
-    const executeDeleteTask = async (task) => {
+    const executeTrashTask = async (task) => {
         try {
-            updateTask(task, "progress", "Удаляем...");
-            await sendDeleteObject(task.operation.source);
-            updateTask(task, "completed", "Удаление успешно выполнено")
+            updateTask(task, "progress", "Перемещаем в корзину...");
+            await sendMoveToTrash([task.operation.source]);
+            updateTask(task, "completed", "Перемещено в корзину")
 
         } catch (e) {
             updateTask(task, "error", e.message);
