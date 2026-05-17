@@ -11,25 +11,15 @@ import {SearchBrowserHeader} from "../components/SearchBrowserHeader/SearchBrows
 
 const LoadingBox = () => {
     return (
-        <Box
-            sx={{
-                width: '100%',
-                pt: 10,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
+        <Box sx={{ width: '100%', pt: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <CircularProgress/>
         </Box>
     )
 }
 
 export default function Files() {
-
     const {folderContentLoading, loadFolder, folderContent, isRootFolder, isSearchMode} = useStorageNavigation();
     const location = useLocation();
-
 
     const loadFolderFromPath = () => {
         let extracted = location.pathname.replace(/^\/files/, '');
@@ -38,52 +28,30 @@ export default function Files() {
         loadFolder(decodedUrl);
     };
 
-
     useEffect(() => {
         loadFolderFromPath();
     }, []);
-
 
     useEffect(() => {
         loadFolderFromPath();
     }, [location.pathname]);
 
     const navigate = useNavigate();
-    useEffect(() => {
-        // if ((!folderContent || folderContent.length === 0) && !folderContentLoading && !isRootFolder) {
-        //     setTimeout(() =>
-        //             navigate(("/files/"))
-        //         , 500)
-        // }
-    }, [folderContent]);
-
-
     const dragRef = useRef();
-
     const [isDragging, setIsDragging] = useState(false);
 
-
     return (
-        <Box ref={dragRef} sx={{
-            height: '100%',
+        <Box ref={dragRef} sx={{ height: '100%' }}>
 
-        }}>
+            {!isSearchMode ? <FileBrowserHeader/> : <SearchBrowserHeader/>}
 
-            {!isSearchMode ?
-                <FileBrowserHeader/> : <SearchBrowserHeader/>
-            }
-
-
-            <Container disableGutters sx={{mt: 36, width: '100%'}}>
+            <Container disableGutters sx={{mt: 12, width: '100%'}}>
                 <Box sx={{p: 1, pt: 1}}>
                     {folderContentLoading ? <LoadingBox/> : <ObjectsContainer/>}
                 </Box>
             </Container>
 
-
-            <FileUploadDraggableArea dragRef={dragRef}
-                                     isDragging={isDragging}
-                                     setIsDragging={setIsDragging}/>
+            <FileUploadDraggableArea dragRef={dragRef} isDragging={isDragging} setIsDragging={setIsDragging}/>
 
             <FileTasksModal/>
         </Box>
