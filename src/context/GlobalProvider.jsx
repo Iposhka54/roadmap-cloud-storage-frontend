@@ -4,6 +4,7 @@ import {AuthProvider} from "./Auth/AuthContext.jsx";
 import {StorageNavigationProvider} from "./Storage/StorageNavigationProvider.jsx";
 import {StorageViewProvider} from "./Storage/StorageViewProvider.jsx";
 import {StorageSelectionProvider} from "./Storage/StorageSelectionProvider.jsx";
+import {StorageMetaProvider} from "./Storage/StorageMetaProvider.jsx";
 import {FileOperationsProvider} from "./Files/FileOperationsProvider.jsx";
 
 export const GlobalProvider = ({children}) => {
@@ -13,17 +14,19 @@ export const GlobalProvider = ({children}) => {
             <NotificationProvider>
                 <AuthProvider>
 
-                    <StorageSelectionProvider>
-                        <StorageViewProvider>
-                            <StorageNavigationProvider>
+                    <StorageMetaProvider>
+                        <StorageSelectionProvider>
+                            <StorageViewProvider>
+                                <StorageNavigationProvider>
 
-                                <FileOperationsProvider>
-                                    {children}
-                                </FileOperationsProvider>
+                                    <FileOperationsProvider>
+                                        {children}
+                                    </FileOperationsProvider>
 
-                            </StorageNavigationProvider>
-                        </StorageViewProvider>
-                    </StorageSelectionProvider>
+                                </StorageNavigationProvider>
+                            </StorageViewProvider>
+                        </StorageSelectionProvider>
+                    </StorageMetaProvider>
 
                 </AuthProvider>
             </NotificationProvider>

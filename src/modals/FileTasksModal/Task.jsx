@@ -17,6 +17,15 @@ export const Task = ({task}) => {
     const path = task.operation.source;
     const status = task.status;
     const message = task.message;
+    const statusColor = status === "completed"
+        ? "success.main"
+        : status === "pending"
+            ? "warning.main"
+            : status === "warning"
+                ? "warning.main"
+                : status === "error"
+                    ? "error.main"
+                    : "text.primary";
 
     return (
         <Card
@@ -80,7 +89,7 @@ export const Task = ({task}) => {
                         width: '100%',
                         display: 'flex',
                         position: 'absolute',
-                        color: status === "completed" ? "success.main" : (status === "pending" ? "warning.main" : "text.primary"),
+                        color: statusColor,
                         left: 18,
                         top: 36,
                     }}>
@@ -143,19 +152,27 @@ export const Task = ({task}) => {
 
 
             {/*//todo add removing pending tasks*/}
-            {(status === 'completed' || status === 'error') &&
+            {(status === 'completed' || status === 'error' || status === 'warning') &&
                 <IconButton
                     onClick={() => deleteTask(task)}
                     sx={{
                         position: 'absolute',
                         bottom: 18,
                         right: 8,
-                        backgroundColor: status === 'completed' ? 'success.main' : 'error.main',
+                        backgroundColor: status === 'completed'
+                            ? 'success.main'
+                            : status === 'warning'
+                                ? 'warning.main'
+                                : 'error.main',
                         width: '30px',
                         height: '30px',
                         color: 'text.primary',
                         "&:hover": {
-                            backgroundColor: status === 'completed' ? 'success.dark' : 'error.dark',
+                            backgroundColor: status === 'completed'
+                                ? 'success.dark'
+                                : status === 'warning'
+                                    ? 'warning.dark'
+                                    : 'error.dark',
 
                         }
                     }}

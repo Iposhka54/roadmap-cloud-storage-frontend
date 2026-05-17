@@ -15,10 +15,13 @@ import RenameModal from "../../../modals/FileChange/RenameModal.jsx";
 import {ContentCut, ContentPaste} from "@mui/icons-material";
 import {isMobile} from "react-device-detect";
 import {useStorageNavigation} from "../../../context/Storage/StorageNavigationProvider.jsx";
+import {useLocation} from "react-router-dom";
 
 
 export const SelectHeader = () => {
     const {deleteObject, downloadObjects, pasteObjects} = useStorageOperations();
+    const location = useLocation();
+    const isFilesRoute = location.pathname.startsWith('/files');
 
     const allowContext = window.APP_CONFIG.isFileContextMenuAllowed;
 
@@ -171,6 +174,10 @@ export const SelectHeader = () => {
     }, [selectedIds, isCutMode, createAnchorElement]);
 
     useEffect(() => {
+        if (!isFilesRoute) {
+            return;
+        }
+
         if (!isMob && allowContext) {
             //todo test experemental mousedown
             document.addEventListener('contextmenu', handleContextMenu, true);
@@ -181,7 +188,11 @@ export const SelectHeader = () => {
                 document.removeEventListener('mousedown', handleClose, true);
             };
         }
-    }, [handleContextMenu, handleClose]);
+    }, [handleContextMenu, handleClose, isFilesRoute]);
+
+    if (!isFilesRoute) {
+        return null;
+    }
 
 
     return (
@@ -427,7 +438,7 @@ export const SelectHeader = () => {
                             <ListItemIcon>
                                 <DeleteIcon fontSize="small"/>
                             </ListItemIcon>
-                            <ListItemText>Удалить</ListItemText>
+                            <ListItemText>В корзину</ListItemText>
                             <Typography variant="body2" sx={{color: 'text.secondary'}}>
                                 Del
                             </Typography>

@@ -15,7 +15,7 @@ const isMob = isMobile;
 export default function StorageListObject({object, style, selectedIds, bufferIds, handlePreview}) {
 
     const {goToFolder} = useStorageNavigation();
-    const {setSelectionMode, isSelectionMode, isCopyMode} = useStorageSelection();
+    const {setSelectionMode, isSelectionMode, isCopyMode, isCutMode} = useStorageSelection();
 
     const onClick = isMob ? () => {
         if (object.folder && !isSelectionMode &&  !cutted) {

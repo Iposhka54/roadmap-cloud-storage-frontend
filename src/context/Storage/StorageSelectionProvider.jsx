@@ -12,6 +12,7 @@ export const StorageSelectionProvider = ({children}) => {
     const [isDeleteMode, setDeleteMode] = useState(false);
 
     const [isCutMode, setCutMode] = useState(false);
+    const [isCopyMode, setCopyMode] = useState(false);
 
     const [bufferIds, setBufferIds] = useState([]);
 
@@ -36,6 +37,17 @@ export const StorageSelectionProvider = ({children}) => {
     const startCutting = () => {
         setBufferIds(selectedIds);
         setCutMode(true);
+        setCopyMode(false);
+        setDeleteMode(false);
+
+        setSelectedIds([]);
+        setSelectionMode(false);
+    }
+
+    const startCopying = () => {
+        setBufferIds(selectedIds);
+        setCopyMode(true);
+        setCutMode(false);
         setDeleteMode(false);
 
         setSelectedIds([]);
@@ -45,6 +57,11 @@ export const StorageSelectionProvider = ({children}) => {
     const endCutting = () => {
         setBufferIds([]);
         setCutMode(false);
+    }
+
+    const endCopying = () => {
+        setBufferIds([]);
+        setCopyMode(false);
     }
 
     return (<CloudStorageContext.Provider
@@ -61,8 +78,11 @@ export const StorageSelectionProvider = ({children}) => {
             bufferIds,
 
             isCutMode,
+            isCopyMode,
+            startCopying,
             startCutting,
-            endCutting
+            endCutting,
+            endCopying
         }}>
         {children}
     </CloudStorageContext.Provider>);

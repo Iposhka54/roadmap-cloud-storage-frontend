@@ -19,8 +19,18 @@ export const API_FILES = API_BASE_URL + API_CONTEXT + '/resource';
 export const API_FILES_SEARCH  = API_FILES + '/search';
 export const API_DOWNLOAD_FILES  = API_FILES + '/download';
 export const API_MOVE_FILES = API_FILES + '/move';
+export const API_TRASH = API_FILES + '/trash';
+export const API_TRASH_RESTORE = API_TRASH + '/restore';
+export const API_DOWNLOAD_TRASH = API_TRASH + '/download';
+export const API_TRASH_ITEMS = API_TRASH + '/items';
 
 export const API_USER_INFO = API_BASE_URL + API_CONTEXT + '/user/me';
+export const API_CHANGE_TARIFF = API_BASE_URL + API_CONTEXT + '/user/tariff';
+
+export const API_TARIFFS = API_BASE_URL + API_CONTEXT + '/tariff';
+
+export const API_STORAGE = API_BASE_URL + API_CONTEXT + '/storage';
+export const API_STORAGE_INFO = API_STORAGE + '/info';
 
 export const API_ADMIN_AUDIT = API_BASE_URL + API_CONTEXT + '/admin/audit';
 

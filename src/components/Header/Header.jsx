@@ -6,10 +6,13 @@ import {useAuthContext} from "../../context/Auth/AuthContext.jsx";
 import {Settings} from "./SettingsMenu/Settings.jsx";
 import {SelectHeader} from "../Selection/SelectHeader/SelectHeader.jsx";
 import {FileButton} from "./FileButton.jsx";
+import {useLocation} from "react-router-dom";
 
 
 export default function Header() {
     const {auth} = useAuthContext();
+    const location = useLocation();
+    const isFilesRoute = location.pathname.startsWith('/files');
 
     return (
         <AppBar component="nav" position="fixed" elevation={0}
@@ -30,8 +33,8 @@ export default function Header() {
                     <MainLabel/>
 
                     <Box sx={{flexGrow: 1, height: 1}}/>
-                    {auth.isAuthenticated && <FileButton/>}
-                    {auth.isAuthenticated && <HeaderSearchField/>}
+                    {auth.isAuthenticated && !isFilesRoute && <FileButton/>}
+                    {auth.isAuthenticated && isFilesRoute && <HeaderSearchField/>}
 
                     <DarkModeSwitcher/>
 

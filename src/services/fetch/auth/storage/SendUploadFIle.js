@@ -1,6 +1,5 @@
 import axios from "axios";
 import {API_FILES} from "../../../../UrlConstants.jsx";
-import StorageExceedException from "../../../../exception/StorageExceedException.jsx";
 import bytes from "bytes";
 
 
@@ -37,15 +36,48 @@ export async function sendUpload(files, updateDownloadTask, updateTask, uploadTa
 
         if (response.status === 201) {
             updateTask(uploadTask, "completed", "Загружено");
+            return {success: true};
         }
     } catch (error) {
         console.log(error);
 
-        if (error.response.status === 409) {
+        const status = error.response?.status;
+        const data = error.response?.data;
+
+        if (status === 409) {
             updateTask(uploadTask, "error", "Файл/папка с таким именем уже существует в целевой папке!");
+            return {success: false};
+
+        } else if (status === 400 && Array.isArray(data?.rejectedFiles)) {
+            const rejectedFiles = data.rejectedFiles;
+            const allRejected = rejectedFiles.length >= files.length;
+            const suffix = rejectedFiles.length > 3
+                ? ` и еще ${rejectedFiles.length - 3}`
+                : '';
+            const listedRejected = rejectedFiles.slice(0, 3).join(', ');
+
+            updateTask(
+                uploadTask,
+                allRejected ? "error" : "warning",
+                allRejected
+                    ? "Недостаточно места в хранилище"
+                    : `Загружено частично: ${listedRejected}${suffix}`
+            );
+
+            return {
+                success: !allRejected,
+                quotaError: {
+                    message: data?.message || (allRejected
+                        ? "Недостаточно места в хранилище"
+                        : "Некоторые файлы не загрузились из-за нехватки места"),
+                    rejectedFiles,
+                    partialUpload: !allRejected,
+                }
+            };
 
         } else {
             updateTask(uploadTask, "error", "Ошибка при загрузке. Попробуйте позже");
+            return {success: false};
         }
     }
 

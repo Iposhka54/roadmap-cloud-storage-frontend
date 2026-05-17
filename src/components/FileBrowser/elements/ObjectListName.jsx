@@ -76,7 +76,7 @@ export const ObjectListName = ({object}) => {
                     },
                 }}
             >
-                {!object.folder && bytes(object.size, {decimalPlaces: 0})}
+                {bytes(object.size || 0, {decimalPlaces: 0})}
             </Typography>
             {!object.folder &&
                 <Typography
