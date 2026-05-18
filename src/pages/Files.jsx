@@ -74,7 +74,7 @@ export default function Files() {
             }
 
 
-            <Container disableGutters sx={{mt: 36, width: '100%'}}>
+            <Container disableGutters sx={{mt: 18, width: '100%'}}>
                 <Box sx={{p: 1, pt: 1}}>
                     {folderContentLoading ? <LoadingBox/> : <ObjectsContainer/>}
                 </Box>
