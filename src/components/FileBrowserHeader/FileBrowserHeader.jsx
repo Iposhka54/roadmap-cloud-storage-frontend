@@ -1,4 +1,14 @@
-import {Box, Button, Card, CircularProgress, Container, Divider, IconButton} from "@mui/material";
+import {
+    Box,
+    Button,
+    Card,
+    CircularProgress,
+    Container,
+    Divider,
+    IconButton,
+    LinearProgress,
+    Tooltip
+} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {CustomBread} from "./Breadcrumbs/CustomBread.jsx";
 import {useStorageNavigation} from "../../context/Storage/StorageNavigationProvider.jsx";
@@ -14,6 +24,10 @@ import ContentCutIcon from "@mui/icons-material/ContentCut";
 import {useStorageOperations} from "../../context/Files/FileOperationsProvider.jsx";
 import AddIcon from '@mui/icons-material/Add';
 import {FolderMenu} from "./FolderMenu/FolderMenu.jsx";
+import {useStorageMeta} from "../../context/Storage/StorageMetaProvider.jsx";
+import bytes from "bytes";
+
+const normalizeBytes = (value) => bytes(value || 0, {decimalPlaces: 1});
 
 export const FileBrowserHeader = () => {
 
@@ -25,18 +39,22 @@ export const FileBrowserHeader = () => {
     } = useStorageNavigation();
 
     const {
-
         isCutMode,
         bufferIds,
-
         endCutting
     } = useStorageSelection();
 
-
     const {pasteObjects} = useStorageOperations();
 
+    // Достаем currentTariff из контекста
+    const {storageInfo, storageInfoLoading, currentTariff} = useStorageMeta();
 
+    const totalSpace = storageInfo?.totalSpace ?? 0;
+    const usedSpace = storageInfo?.usedSpace ?? 0;
+    const progress = totalSpace > 0 ? Math.min((usedSpace / totalSpace) * 100, 100) : 0;
 
+    // Безопасно получаем имя тарифа (на случай если это объект или строка)
+    const tariffName = currentTariff?.name || (typeof currentTariff === 'string' ? currentTariff : 'Базовый');
 
     function handleBack() {
         goToPrevFolder();
@@ -66,14 +84,11 @@ export const FileBrowserHeader = () => {
         }
     }, [currentFolder, folderContentLoading]);
 
-
-//context
-
-
     return (
         <Container disableGutters
                    sx={{
-                       mt: 22,
+                       top: '88px',
+                       pt: 1,
                        width: '100%',
                        position: 'fixed',
                        transform: 'translateX(-50%)',
@@ -81,8 +96,6 @@ export const FileBrowserHeader = () => {
                        zIndex: 2,
                    }}
         >
-
-
             <Box sx={{p: 1}}>
                 <Card elevation={0}
                       sx={{
@@ -94,8 +107,7 @@ export const FileBrowserHeader = () => {
                           borderRadius: 2,
                           backdropFilter: 'blur(10px)',
                           WebkitBackdropFilter: 'blur(10px)',
-                          height: '110px'
-
+                          height: '115px' // Чуть увеличили высоту для красивого размещения дашборда
                       }}
                 >
                     <Box
@@ -129,10 +141,9 @@ export const FileBrowserHeader = () => {
                             display: "flex",
                             overflowX: "auto",
                             maxWidth: "100%",
+                            position: 'relative'
                         }}
                     >
-
-
                         {!isRootFolder &&
                             <Button onClick={handleBack} variant='contained' sx={{
                                 minHeight: '38px',
@@ -149,27 +160,63 @@ export const FileBrowserHeader = () => {
                         { !isCutMode ?
                             <Box sx={{
                                 position: 'absolute',
-                                width: "50%",
-
+                                width: "60%", // Расширили зону, чтобы текст влезал красиво
+                                maxWidth: '320px', // Ограничитель для больших экранов
                                 transform: 'translateX(-50%)',
                                 left: '50%',
-                                bottom: 13,
+                                bottom: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
                             }}>
-                                <Typography variant='h5' sx={{
+
+                                {/* Название папки */}
+                                <Typography variant='subtitle1' sx={{
                                     width: '100%',
                                     userSelect: 'none',
-                                    fontSize: '20px',
+                                    fontSize: '18px',
+                                    fontWeight: 600,
                                     textAlign: 'center',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
+                                    lineHeight: 1.2,
+                                    mb: 0.5 // Отступ от названия до индикатора
                                 }}>
                                     {!folderContentLoading && (currentFolder ? currentFolder.slice(0, -1) : 'Корневой каталог')}
-
                                 </Typography>
+
+                                {/* Информационный дашборд */}
+                                <Box sx={{ width: '100%' }}>
+
+                                    {/* Блок с текстами (Место и Тариф) */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, px: 0.5 }}>
+                                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', fontWeight: 500 }}>
+                                            {storageInfoLoading ? 'Загрузка...' : `${normalizeBytes(usedSpace)} из ${normalizeBytes(totalSpace)}`}
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'primary.main', fontWeight: 600 }}>
+                                            Тариф: {tariffName}
+                                        </Typography>
+                                    </Box>
+
+                                    {/* Красивый скругленный прогресс-бар */}
+                                    <Tooltip title={`Занято ${progress.toFixed(1)}%`} arrow placement="bottom">
+                                        <LinearProgress
+                                            variant={storageInfoLoading ? "indeterminate" : "determinate"}
+                                            value={progress}
+                                            color={progress > 90 ? "error" : progress > 70 ? "warning" : "primary"}
+                                            sx={{
+                                                height: 6, // Сделали потолще
+                                                borderRadius: 3, // Красивые круглые края
+                                                backgroundColor: 'action.hover', // Мягкий фон под цвет темы (светлой/темной)
+                                                cursor: 'help'
+                                            }}
+                                        />
+                                    </Tooltip>
+                                </Box>
+
                             </Box>
                             :
-
                             <Box sx={{
                                 position: 'absolute',
                                 width: "70%",
@@ -197,13 +244,11 @@ export const FileBrowserHeader = () => {
                                         backgroundColor: 'error.main',
                                         '&:hover': {
                                             backgroundColor: 'error.dark',
-
                                         }
                                     }}
                                 >
                                     <CloseIcon sx={{fontSize: '28px'}}/>
                                 </IconButton>
-
 
                                 <Typography variant='h6' sx={{
                                     width: '100%',
@@ -212,17 +257,13 @@ export const FileBrowserHeader = () => {
                                     color: 'white',
                                     pt: 0.8
                                 }}>
-
                                     {isCutMode &&
                                         <ContentCutIcon sx={{fontSize: '20px', pt: '1px', mr: 0.5, mb: -0.3}}/>}
-
                                     Буфер: {bufferIds.length} <InsertDriveFileIcon
                                     sx={{fontSize: '20px', pt: '1px', ml: -0.3, mb: -0.3}}/>
-
                                 </Typography>
 
                                 <IconButton
-
                                     onClick={pasteObjects}
                                     sx={{
                                         position: 'absolute',
@@ -233,7 +274,6 @@ export const FileBrowserHeader = () => {
                                         backgroundColor: 'success.main',
                                         '&:hover': {
                                             backgroundColor: 'success.dark',
-
                                         }
                                     }}
                                 >
@@ -241,17 +281,16 @@ export const FileBrowserHeader = () => {
                                 </IconButton>
                             </Box>
                         }
+
                         <IconButton onClick={handleOpenFolderMenu} variant='contained' sx={{ml: 'auto'}}>
                             <AddIcon/>
                         </IconButton>
 
                         { !isCutMode &&
-
                             <IconButton onClick={handleOpenMenu} variant='contained' sx={{ml: '0'}}>
                                 <MoreVertIcon/>
                             </IconButton>
                         }
-
 
                     </Box>
                 </Card>

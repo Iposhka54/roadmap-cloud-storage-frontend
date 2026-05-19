@@ -275,7 +275,7 @@ export default function Trash() {
                 onDelete={requestDeleteForever} onClose={clearSelection}
             />
 
-            <Container disableGutters sx={{mt: 12, width: '100%'}}>
+            <Container disableGutters sx={{mt: 24, width: '100%'}}>
                 <Box sx={{p: 1, pb: 4}}>
                     <Card
                         elevation={0}
