@@ -45,7 +45,7 @@ export default function Files() {
 
             {!isSearchMode ? <FileBrowserHeader/> : <SearchBrowserHeader/>}
 
-            <Container disableGutters sx={{mt: 12, width: '100%'}}>
+            <Container disableGutters sx={{mt: 26, width: '100%'}}>
                 <Box sx={{p: 1, pt: 1}}>
                     {folderContentLoading ? <LoadingBox/> : <ObjectsContainer/>}
                 </Box>

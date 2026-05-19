@@ -1,4 +1,13 @@
-import {AppBar, Box, Container, IconButton, Toolbar, Tooltip, CircularProgress} from "@mui/material";
+import {
+    AppBar,
+    Box,
+    Container,
+    IconButton,
+    Toolbar,
+    Tooltip,
+    CircularProgress,
+    Typography // <-- Обязательно добавлено сюда
+} from "@mui/material";
 import DarkModeSwitcher from "./DarkModeSwitcher.jsx";
 import MainLabel from "./MainLabel.jsx";
 import {HeaderSearchField} from "../InputElements/HeaderSearchField.jsx";
@@ -51,36 +60,72 @@ export default function Header() {
                     {auth.isAuthenticated && !isFilesRoute && <FileButton/>}
                     {auth.isAuthenticated && isFilesRoute && <HeaderSearchField/>}
 
-                    {/* Новая панель: Индикатор места + Корзина + Тарифы */}
                     {auth.isAuthenticated && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', ml: 1, gap: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', ml: 1, gap: 1 }}>
 
-                            <Tooltip
-                                title={`Занято ${normalizeBytes(usedSpace)} из ${normalizeBytes(totalSpace)} (${progress.toFixed(0)}%). Тариф: ${currentTariff || '—'}`}
-                                arrow
-                            >
-                                <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 1, cursor: 'help' }}>
-                                    <CircularProgress
-                                        variant="determinate"
-                                        value={100}
-                                        size={28}
-                                        thickness={5}
-                                        sx={{ color: 'rgba(125,125,125,0.2)', position: 'absolute' }}
-                                    />
-                                    <CircularProgress
-                                        variant={storageInfoLoading ? "indeterminate" : "determinate"}
-                                        value={progress}
-                                        size={28}
-                                        thickness={5}
-                                        color={progress > 90 ? "error" : progress > 70 ? "warning" : "primary"}
-                                    />
-                                </Box>
-                            </Tooltip>
+                            {!isFilesRoute && (
+                                <Tooltip
+                                    title={`Занято ${normalizeBytes(usedSpace)} из ${normalizeBytes(totalSpace)} (${progress.toFixed(0)}%)`}
+                                    arrow
+                                >
+                                    <IconButton
+                                        color={isTariffsRoute ? "primary" : "default"}
+                                        sx={{
+                                            width: 44,
+                                            height: 44,
+                                            transition: 'all 0.2s ease-in-out',
+                                        }}
+                                    >
+                                        <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                                            <CircularProgress
+                                                variant="determinate"
+                                                value={100}
+                                                size={36}
+                                                thickness={4}
+                                                sx={{ color: 'rgba(125,125,125,0.2)', position: 'absolute' }}
+                                            />
+
+                                            <CircularProgress
+                                                variant={storageInfoLoading ? "indeterminate" : "determinate"}
+                                                value={progress}
+                                                size={36}
+                                                thickness={4}
+                                                color={progress > 90 ? "error" : progress > 70 ? "warning" : "primary"}
+                                            />
+
+                                            <Box
+                                                sx={{
+                                                    position: 'absolute',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '100%',
+                                                    height: '100%'
+                                                }}
+                                            >
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                    sx={{ fontSize: '10px', fontWeight: 700 }}
+                                                >
+                                                    {storageInfoLoading ? '...' : `${Math.round(progress)}%`}
+                                                </Typography>
+                                            </Box>
+
+                                        </Box>
+                                    </IconButton>
+                                </Tooltip>
+                            )}
 
                             <Tooltip title="Корзина">
                                 <IconButton
                                     onClick={() => navigate('/trash')}
                                     color={isTrashRoute ? "primary" : "default"}
+                                    sx={{
+                                        transition: 'all 0.2s ease-in-out',
+                                        '&:hover': { transform: 'scale(1.1)' }
+                                    }}
                                 >
                                     <DeleteOutlineIcon />
                                 </IconButton>
@@ -90,11 +135,17 @@ export default function Header() {
                                 <IconButton
                                     onClick={() => navigate('/tariffs')}
                                     color={isTariffsRoute ? "primary" : "default"}
+                                    sx={{
+                                        transition: 'all 0.2s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'scale(1.1)',
+                                            backgroundColor: 'action.hover'
+                                        }
+                                    }}
                                 >
                                     <WorkspacePremiumIcon />
                                 </IconButton>
                             </Tooltip>
-
                         </Box>
                     )}
 
@@ -106,4 +157,4 @@ export default function Header() {
             </Container>
         </AppBar>
     )
-};
+}
